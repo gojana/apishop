@@ -1,0 +1,37 @@
+{
+  "name": "apishop",
+  "version": "1.0.0",
+  "description": "api para consumo de datos tienda simple, parte portafolio @gjana",
+  "main": "server.js",
+  "scripts": {
+    "test": "nodemon server.js",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gojana/apishop"
+  },
+  "author": "gonzalo jana",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.0",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^6.4.0",
+    "helmet": "^5.1.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^8.5.1",
+    "mongo-sanitize": "^1.1.0",
+    "mongoose": "^6.3.5",
+    "nodemailer": "^6.7.5",
+    "nodemon": "^2.0.16",
+    "ratelimit": "^0.0.4",
+    "validator": "^13.7.0",
+    "xss": "^1.0.11",
+    "xss-clean": "^0.1.1"
+  }
+}
