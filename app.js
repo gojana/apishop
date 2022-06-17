@@ -21,7 +21,11 @@ app.use(bodyParser.json({ limit: '10kb' }));
 
 //**********SEGURIDAD*****************/
 //seguridad para los HEADERS HTTP
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginEmbedderPolicy: false,
+  })
+);
 const limiter = rateLimit({
   max: 50,
   windowMs: 60 * 60 * 1000,
