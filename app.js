@@ -10,6 +10,7 @@ const helmet = require('helmet');
 const mongoSanatize = require('express-mongo-sanitize');
 const hpp = require('hpp');
 const xss = require('xss-clean');
+const cors = require('cors');
 
 const userRouter = require('./routes/userRouter');
 const productRouter = require('./routes/productRouter');
@@ -21,11 +22,10 @@ app.use(bodyParser.json({ limit: '10kb' }));
 
 //**********SEGURIDAD*****************/
 //seguridad para los HEADERS HTTP
-app.use(
-  helmet({
-    crossOriginEmbedderPolicy: false,
-  })
-);
+
+app.use(helmet({ crossOriginEmbedderPolicy: false }));
+app.use(cors({ origin: '*' }));
+
 const limiter = rateLimit({
   max: 50,
   windowMs: 60 * 60 * 1000,
