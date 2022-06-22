@@ -2,6 +2,8 @@ const User = require('./../models/userModel');
 const APIfeatures = require('./../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
 const appError = require('./../utils/appError');
+const multer = require('multer');
+const sharp = require('sharp');
 
 //UTILITARIOS
 const filteredRequestBody = (obj, ...allowedFields) => {
@@ -11,6 +13,36 @@ const filteredRequestBody = (obj, ...allowedFields) => {
   });
   return newObj;
 };
+
+const multerStorage = multer.memoryStorage();
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(
+      new appError('no es una imagen,solo se aceptan archivos imagen', 400),
+      false
+    );
+  }
+};
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+exports.uploadUserPhoto = upload.single('photo');
+exports.resizeImage = (req, res, next) => {
+  if (!req.file) return next();
+
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+  sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 70 })
+    .toFile(`public/img/users/${req.file.filename}`);
+
+  next();
+};
+
 //--------------API USER------------------------------------------
 //se usa middleware para asignar datos a params para luego ser usados por la funcion getUserbyId
 exports.getMe = catchAsync(async (req, res, next) => {
@@ -26,6 +58,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   }
   //se filtran campos deseados de la request
   const filteredRequest = filteredRequestBody(req.body, 'username', 'photo');
+  if (req.file) filteredRequest.photo = req.file.filename;
   const updateUser = await User.findByIdAndUpdate(
     req.user.id,
     filteredRequest,
@@ -64,7 +97,7 @@ exports.getAllUsers = catchAsync(async (req, res) => {
 exports.addUser = catchAsync(async (req, res) => {
   const newUser = await User.create({
     mail: req.body.mail,
-    username:req.body.username,
+    username: req.body.username,
     password: req.body.password,
     repeatPassword: req.body.repeatPassword,
     role: 'user',

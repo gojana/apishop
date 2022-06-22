@@ -23,6 +23,8 @@ router.get(
 router.patch(
   '/updateMe',
   authController.roleValidator('user'),
+  userController.uploadUserPhoto,
+  userController.resizeImage,
   userController.updateMe
 );
 router.delete(
