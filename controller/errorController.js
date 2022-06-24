@@ -1,26 +1,26 @@
-const AppError = require('./../utils/appError');
+const appError = require('./../utils/appError');
 
 const handlerCastErrorDB = (err) => {
   const message = `Invalid ${err.path}:  ${err.value}`;
-  return new AppError(message, 400);
+  return new appError(message, 400);
 };
 
 const handlerDuplicateIdsDB = (err) => {
   const value = Object.keys(err.keyValue);
   const message = `duplicated field value:${value} please use another value`;
-  return new AppError(message, 400);
+  return new appError(message, 400);
 };
 const handlerValidationErrorDB = (err) => {
   const errors = Object.values(err.errors).map((el) => el.message);
 
   const message = `invalid input data. ${errors.join('. ')} `;
-  return new AppError(message, 400);
+  return new appError(message, 400);
 };
 const handlerJWTError = () => {
-  return new AppError('token invalido', 401);
+  return new appError('token invalido', 401);
 };
 const handlerExpiredError = () => {
-  return new AppError('tu token expiro, loguea denuevo', 401);
+  return new appError('tu token expiro, loguea denuevo', 401);
 };
 //refactorizacion de codigo error de funcion exportada en module.export
 const sendErroDev = (err, res) => {

@@ -42,7 +42,6 @@ exports.signUp = catchAsync(async (req, res, next) => {
     password: req.body.password,
     repeatPassword: req.body.repeatPassword,
     role: 'user',
-    photo: req.body.photo,
     active: 1,
   });
   createSendToken(newUser, 201, res);
