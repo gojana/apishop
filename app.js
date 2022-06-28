@@ -44,6 +44,11 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/reviews', reviewRouter);
 
+//*******RUTAS PUBLICAS*********
+app.use('/api/v1/productResources', express.static('public/img/products'));
+app.use('/api/v1/userResources', express.static('public/img/users'));
+
+
 //************MANEJO DE ERRORES****************/
 //atrapa todos los request de rutas erroneas
 app.all('*', (req, res, next) => {
