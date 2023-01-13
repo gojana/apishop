@@ -2,7 +2,7 @@ const catchAsync = require('./../utils/catchAsync');
 const appError = require('./../utils/appError');
 
 exports.getAllDocs = (model) =>
-  catchAsync(async (req, res) => {
+  catchAsync(async (req, res, next) => {
     const doc = await model.find({ active: 1 });
 
     res.status(200).json({

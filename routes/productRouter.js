@@ -7,10 +7,6 @@ const router = express.Router();
 
 router.use('/:prodId/reviews', reviewRouter);
 
-router.route('/type').get(productController.getAlltypes);
-router.route('/:type').get(productController.getProductByType);
-router.route('/:name').get(productController.getProductByName);
-
 router
   .route('/')
   .get(productController.getAllProducts)
@@ -19,12 +15,16 @@ router
     authController.roleValidator('admin'),
     productController.addProduct
   );
+
+router.route('/type').get(productController.getAlltypes);
+router.route('/type/:type').get(productController.getProductByType);
+router.route('/name/:name').get(productController.getProductByName);
 router
-  .route('/:id')
+  .route('/id/:id')
   .get(productController.getProductById)
   .patch(
     authController.protectRoutes,
-    authController.roleValidator('admin'),
+    authController.roleValidator('user'),
     productController.uploadProductImage,
     productController.resizeImage,
     productController.updateProduct

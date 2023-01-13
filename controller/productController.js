@@ -43,11 +43,11 @@ exports.resizeImage = catchAsync(async (req, res, next) => {
 });
 
 //-------------PUBLICO---------------------------
-exports.getAlltypes = catchAsync(async (req, res) => {
+exports.getAlltypes = catchAsync(async (req, res, next) => {
   const getProductType = await Product.distinct('type', { active: 1 });
   res.status(200).json({ status: 'success', data: { tipos: getProductType } });
 });
-exports.getProductByType = catchAsync(async (req, res) => {
+exports.getProductByType = catchAsync(async (req, res, next) => {
   const productByType = await Product.find({
     type: req.params.type,
     active: 1,
@@ -56,11 +56,37 @@ exports.getProductByType = catchAsync(async (req, res) => {
     .status(200)
     .json({ status: 'success', data: { productos: productByType } });
 });
-exports.getProductByName = catchAsync(async (req, res) => {
+exports.getProductByName = catchAsync(async (req, res, next) => {
   const productByName = await Product.findOne({ name: req.params.name });
+  if (productByName === null) {
+    res
+      .status(404)
+      .json({ status: 'fail', data: { message: 'producto no encontrado' } });
+    return;
+  }
+  res.status(200).json({ status: 'success', data: { product: productByName } });
+});
+exports.getItemByQuery = catchAsync(async (req, res, next) => {
+  let doc = {};
+  if (req.query.type) {
+    doc = await Product.find({
+      type: req.query.type,
+      active: 1,
+    });
+  }
+  if (req.query.name) {
+    doc = await Product.findOne({ name: req.query.name });
+  }
+  if (req.query.id) {
+    doc = await Product.findOne({ id: req.query.id });
+  }
+  if (req.query === '') {
+    doc = await Product.find({ active: 1 });
+  }
+
   res
     .status(200)
-    .json({ status: 'success', data: { producto: productByName } });
+    .json({ status: 'success', results: doc.length, data: { producto: doc } });
 });
 exports.getAllProducts = factory.getAllDocs(Product);
 exports.getProductById = factory.getDocById(Product);

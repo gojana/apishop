@@ -13,14 +13,19 @@ const signToken = (id) => {
   });
 };
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, rememberMe=false, statusCode, res) => {
   const token = signToken(user._id);
+  let cookieExpiresIn = 0;
+  if (rememberMe) {
+    cookieExpiresIn = 1;
+  } else {
+    cookieExpiresIn = process.env.JWT_COOKIE_EXPIRES_IN;
+  }
   const cookieOptions = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    secure: false, //opcion para solo permitir request desde protocolo https (en vez de htttp)
+    expires: new Date(Date.now() + cookieExpiresIn * 24 * 60 * 60 * 1000),
+    secure: true, //opcion para solo permitir request desde protocolo https (en vez de htttp)
     httpOnly: true, //opcion para que cookie no pueda ser accedida ni modificada por el browser
+    sameSite: 'None',
   };
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
@@ -36,19 +41,37 @@ const createSendToken = (user, statusCode, res) => {
 };
 
 exports.signUp = catchAsync(async (req, res, next) => {
-  const newUser = await User.create({
-    mail: req.body.mail,
-    username: req.body.username,
-    password: req.body.password,
-    repeatPassword: req.body.repeatPassword,
-    role: 'user',
-    active: 1,
-  });
-  createSendToken(newUser, 201, res);
+  try {
+    const user = await User.findOne({ mail: req.body.mail });
+    
+    if (user) {
+      return next(new AppError('ya existe un usuario con ese email', 404));
+    }
+
+    const newUser = await User.create({
+      mail: req.body.mail,
+      username: req.body.username,
+      password: req.body.password,
+      repeatPassword: req.body.repeatPassword,
+      photo: 'newUserAvatar.jpeg',
+      role: 'user',
+      active: 1,
+    });
+    //createSendToken(newUser, 201, res);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        message: 'usuario creado',
+      },
+    });
+  } catch (err) {
+    return next(new AppError(err, 404));
+  }
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  const { mail, password } = req.body;
+  const { mail, password, rememberMe } = req.body;
   // se verifica que  el pass y email existan
   if (!mail || !password) {
     return next(new AppError('por favor ingrese password o email', 401));
@@ -64,18 +87,33 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   //si todo esta bien  enviar token al cliente
-  createSendToken(user, 201, res);
+  createSendToken(user, rememberMe, 201, res);
+});
+exports.logout = catchAsync(async (req, res, next) => {
+  const cookieOptions = {
+    
+    secure: true, //opcion para solo permitir request desde protocolo https (en vez de htttp)
+    httpOnly: true, //opcion para que cookie no pueda ser accedida ni modificada por el browser
+    sameSite: 'None',
+  };
+  res.cookie('jwt', '', cookieOptions);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      message: 'deslogueado con exito',
+    },
+  });
 });
 
 exports.protectRoutes = catchAsync(async (req, res, next) => {
   //verificar si el token existe
   let token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
-  }
+  //if (
+  //req.headers.authorization &&
+  //req.headers.authorization.startsWith('Bearer')
+  // ) {
+  token = req.cookies.jwt;
+  // }
   if (!token) {
     return next(new AppError('no estas logueado, acceso denegado', 401));
   }
@@ -95,6 +133,36 @@ exports.protectRoutes = catchAsync(async (req, res, next) => {
   req.user = freshUser;
   next();
 });
+
+exports.isLogged = catchAsync(async (req, res, next) => {
+  //verificar si el token existe
+  if (req.cookies.jwt) {
+    //verificar si el token corresponde
+    //el metodo verify retorna 3 variables, id del usuario, iat: issued at y la fecha de expiracion exp
+    const decoded = await promisify(jwt.verify)(
+      req.cookies.jwt,
+      process.env.JWT_SECRET
+    );
+    //verificar si el usuario aun existe
+    const userStillExist = await User.findById(decoded.id);
+    if (!userStillExist)
+      return next(new AppError('el usuario ya no existe', 401));
+    //verificar si la password cambio despues de asignarle el token
+    if (userStillExist.changedPassword(decoded.iat)) {
+      return next(new AppError('el usuario cambio su pass recientemente', 401));
+    }
+    //se entrega datos de usuario para uso en el frontend
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: userStillExist,
+      },
+    });
+  } else {
+    return next(new AppError('no existe cookie', 401));
+  }
+});
+
 // EL VALIDADOR DEPENDE DEL RETURN DE PROTECT ROUTES, por ende debe ir despues al ser middleware
 exports.roleValidator = (...roles) => {
   return (req, res, next) => {
@@ -114,12 +182,14 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   //se genera el random token anexado al email
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
-  //enviar token a correo para reset de password
+  //enviar token a correo para reset de password funcional en clientes tipo POSTMAN
   const resetURL = `${req.protocol}://${req.get(
     'host'
   )}/api/users/resetPassword/${resetToken} `;
+  //enviar token a correo para reset de password funcional con frontEND
+  const ResetURLFront = `${req.protocol}://localhost:3000/resetPassword/${resetToken}`;
 
-  const message = `olvidaste tu pass? crea una nueva siguiendo este link ${resetURL}`;
+  const message = `olvidaste tu pass? crea una nueva siguiendo este link ${ResetURLFront}`;
   try {
     await sendMail({
       email: user.mail,

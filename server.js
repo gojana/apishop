@@ -30,7 +30,6 @@ mongoose.connect(DB, {}).then((con) => {
 const server = app.listen(port, hostname, () => {
   console.log(`listening on port ${port}...`);
 });
-
 //se atrapa excepciones y reject de promises
 process.on('unhandledRejection', (err) => {
   console.log(err.name, err.message);

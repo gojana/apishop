@@ -9,7 +9,16 @@ const productSchema = new mongoose.Schema({
   type: {
     type: String,
     required: [true, 'el producto debe tener un tipo'],
-    unique: true,
+    enum: [
+      'barbecho',
+      'herramienta',
+      'almacigo',
+      'verdura',
+      'fruta',
+      'planta',
+      'semilla',
+    ],
+    unique: false,
   },
   description: {
     type: String,
@@ -17,7 +26,6 @@ const productSchema = new mongoose.Schema({
   characteristics: [String],
   price: {
     type: Number,
-    required: true,
   },
   stock: {
     type: Number,

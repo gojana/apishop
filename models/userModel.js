@@ -13,12 +13,12 @@ const userSchema = new mongoose.Schema({
   },
   username: {
     type: String,
-    required: true,
+    required: [true, 'el campo usuario es obligatorio'],
   },
   password: {
     type: String,
     required: [true, 'el usuario debe tener password'],
-    minLength: 8,
+    minLength: [8, 'el largo de la Password es menor a lo permitido (8)'],
     select: false,
   },
   repeatPassword: {

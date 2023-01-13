@@ -4,6 +4,7 @@ const catchAsync = require('./../utils/catchAsync');
 const appError = require('./../utils/appError');
 const multer = require('multer');
 const sharp = require('sharp');
+const AppError = require('./../utils/appError');
 
 //UTILITARIOS
 const filteredRequestBody = (obj, ...allowedFields) => {
@@ -52,20 +53,39 @@ exports.getMe = catchAsync(async (req, res, next) => {
 });
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  //si el usuario intenta cambiar la password desde este metodo
-  if (req.body.password || req.body.repeatPassword) {
-    return next(new appError('esta ruta no es para cambio de passwords', 400));
-  }
-  //se filtran campos deseados de la request
-  const filteredRequest = filteredRequestBody(req.body, 'username', 'photo');
-  if (req.file) filteredRequest.photo = req.file.filename;
-  const updateUser = await User.findByIdAndUpdate(
-    req.user.id,
-    filteredRequest,
-    { new: true, runValidators: true }
-  );
+  try {
+    //si el usuario intenta cambiar la password desde este metodo
+    if (req.body.password || req.body.repeatPassword) {
+      return next(
+        new appError('esta ruta no es para cambio de passwords', 400)
+      );
+    }
+    if (!req.body.username && !req.body.photo) {
+      return next(new appError('no has cambiado ningun dato!', 400));
+    }
 
-  res.status(200).json({ status: 'success', data: { user: updateUser } });
+    let usernameField = req.body.username ? 'username' : '';
+    let photoField = req.file ? 'photo' : '';
+
+    //se filtran campos deseados de la request
+    const filteredRequest = filteredRequestBody(
+      req.body,
+      usernameField,
+      photoField
+    );
+    if (req.file) filteredRequest.photo = req.file.filename;
+
+    const updateUser = await User.findByIdAndUpdate(
+      req.user.id,
+      filteredRequest,
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({ status: 'success', data: { user: updateUser } });
+  } catch (err) {
+    console.log(err);
+    return next(new AppError(err, 404));
+  }
 });
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user.id, { active: 0 });
@@ -101,7 +121,7 @@ exports.addUser = catchAsync(async (req, res) => {
     password: req.body.password,
     repeatPassword: req.body.repeatPassword,
     role: 'user',
-    photo: req.body.photo,
+    photo: 'newUserAvatar.jpeg',
     active: 1,
   });
   res.status(200).json({ status: 'success', data: { newUser } });
