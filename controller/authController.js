@@ -13,7 +13,7 @@ const signToken = (id) => {
   });
 };
 
-const createSendToken = (user, rememberMe=false, statusCode, res) => {
+const createSendToken = (user, rememberMe = false, statusCode, res) => {
   const token = signToken(user._id);
   let cookieExpiresIn = 0;
   if (rememberMe) {
@@ -43,7 +43,7 @@ const createSendToken = (user, rememberMe=false, statusCode, res) => {
 exports.signUp = catchAsync(async (req, res, next) => {
   try {
     const user = await User.findOne({ mail: req.body.mail });
-    
+
     if (user) {
       return next(new AppError('ya existe un usuario con ese email', 404));
     }
@@ -91,7 +91,6 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 exports.logout = catchAsync(async (req, res, next) => {
   const cookieOptions = {
-    
     secure: true, //opcion para solo permitir request desde protocolo https (en vez de htttp)
     httpOnly: true, //opcion para que cookie no pueda ser accedida ni modificada por el browser
     sameSite: 'None',
@@ -187,7 +186,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     'host'
   )}/api/users/resetPassword/${resetToken} `;
   //enviar token a correo para reset de password funcional con frontEND
-  const ResetURLFront = `${req.protocol}://localhost:3000/resetPassword/${resetToken}`;
+  const ResetURLFront = `${req.protocol}://${process.env.REACT_APP_URL_PROD}/resetPassword/${resetToken}`;
 
   const message = `olvidaste tu pass? crea una nueva siguiendo este link ${ResetURLFront}`;
   try {

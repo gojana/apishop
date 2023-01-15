@@ -26,8 +26,16 @@ app.use(cookieParser());
 //seguridad para los HEADERS HTTP
 
 app.use(helmet({ crossOriginEmbedderPolicy: false }));
-app.use(cors({origin: 'http://localhost:3000',
-credentials:  true} ));
+app.use(
+  cors({
+    origin: [
+      'http://localhost:3000',
+      'http://127.0.0.1',
+      'https://reactapishop.herokuapp.com',
+    ],
+    credentials: true,
+  })
+);
 
 const limiter = rateLimit({
   max: 5000,
