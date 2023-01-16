@@ -60,19 +60,15 @@ exports.updateMe = catchAsync(async (req, res, next) => {
         new appError('esta ruta no es para cambio de passwords', 400)
       );
     }
-    if (!req.body.username && !req.body.photo) {
+    if (!req.body.username && !req.file) {
       return next(new appError('no has cambiado ningun dato!', 400));
     }
 
-    let usernameField = req.body.username ? 'username' : '';
-    let photoField = req.file ? 'photo' : '';
-
     //se filtran campos deseados de la request
-    const filteredRequest = filteredRequestBody(
-      req.body,
-      usernameField,
-      photoField
-    );
+    const filteredRequest = filteredRequestBody(req.body, 'username', 'photo');
+    if (req.body.username === '') {
+      delete filteredRequest.username;
+    }
     if (req.file) filteredRequest.photo = req.file.filename;
 
     const updateUser = await User.findByIdAndUpdate(
@@ -83,7 +79,6 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
     res.status(200).json({ status: 'success', data: { user: updateUser } });
   } catch (err) {
-    console.log(err);
     return next(new AppError(err, 404));
   }
 });
