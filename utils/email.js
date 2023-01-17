@@ -15,7 +15,7 @@ const sendMail = async (options) => {
   });
 
   const mailOptions = {
-    from: 'gjonn gjonn.coc@gmail.com',
+    from: 'elviejoShop gjonn.coc@gmail.com',
     to: options.email,
     subject: options.subject,
     text: options.message,

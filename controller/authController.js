@@ -182,13 +182,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
   //enviar token a correo para reset de password funcional en clientes tipo POSTMAN
-  const resetURL = `${req.protocol}://${req.get(
-    'host'
-  )}/api/users/resetPassword/${resetToken} `;
-  //enviar token a correo para reset de password funcional con frontEND
-  const ResetURLFront = `${req.protocol}://${process.env.REACT_APP_URL_PROD}/resetPassword/${resetToken}`;
+  const resetURL = `${req.protocol}://${process.env.REACT_APP_BASE_URL_PROD}/api/users/resetPassword/${resetToken} `;
 
-  const message = `olvidaste tu pass? crea una nueva siguiendo este link ${ResetURLFront}`;
+  const message = `olvidaste tu pass? crea una nueva siguiendo este link ${resetURL}`;
   try {
     await sendMail({
       email: user.mail,
