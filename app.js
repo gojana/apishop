@@ -58,6 +58,7 @@ app.use('/api/v1/reviews', reviewRouter);
 //*******RUTAS PUBLICAS*********
 app.use('/api/v1/productResources', express.static('public/img/products'));
 app.use('/api/v1/userResources', express.static('public/img/users'));
+app.use('/api/v1/downloadResources', express.static('public/download/'));
 
 //************MANEJO DE ERRORES****************/
 //atrapa todos los request de rutas erroneas
