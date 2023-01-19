@@ -40,7 +40,7 @@ router
   .get(authController.roleValidator('admin'), userController.getAllUsers)
   .post(userController.addUser);
 router
-  .route('/:id')
+  .route('/userActions')
   .get(
     authController.roleValidator('user', 'admin'),
     userController.getUserById

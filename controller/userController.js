@@ -99,7 +99,7 @@ exports.getUserById = catchAsync(async (req, res, next) => {
 });
 exports.getAllUsers = catchAsync(async (req, res) => {
   //se llama clase APIfeatures para ejecutar las funcionalidades refactorizadas.
-  const features = new APIfeatures(User.find(), req.query)
+  const features = new APIfeatures(User.find({ active: 1 }), req.query)
     .filter()
     .sort()
     .limitFields()
@@ -136,15 +136,19 @@ exports.updateUser = catchAsync(async (req, res, next) => {
   res.status(204).json({ status: 'success', data: { userUpdate } });
 });
 exports.deleteUser = catchAsync(async (req, res, next) => {
-  const userDelete = await User.findByIdAndDelete(req.params.id);
+  try {
+    //const userDelete = await User.findByIdAndDelete(req.params.id);
+    const userDelete = await User.findByIdAndUpdate(req.body.id, { active: 0 });
 
-  if (!userDelete) {
-    return next(
-      new appError(
-        `no se encontro el producto con el ID: ${req.params.id}`,
-        404
-      )
-    );
+    if (!userDelete) {
+      return next(
+        new appError(`no se encontro el usuario con el ID: ${req.body.id}`, 404)
+      );
+    }
+    res
+      .status(204)
+      .json({ status: 'success', message: 'usuario borrado con exito' });
+  } catch (err) {
+    return next(new appError(`${err}`, 404));
   }
-  res.status(204).json({ status: 'success' });
 });
