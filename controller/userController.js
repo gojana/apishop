@@ -69,7 +69,11 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     if (req.body.username === '') {
       delete filteredRequest.username;
     }
-    if (req.file) filteredRequest.photo = req.file.filename;
+    if (req.file) {
+      filteredRequest.photo = req.file.filename;
+    } else {
+      delete filteredRequest.photo;
+    }
 
     const updateUser = await User.findByIdAndUpdate(
       req.user.id,
@@ -122,32 +126,65 @@ exports.addUser = catchAsync(async (req, res) => {
   res.status(200).json({ status: 'success', data: { newUser } });
 });
 exports.updateUser = catchAsync(async (req, res, next) => {
-  if (req.body.password || req.body.repeatPassword) {
-    return next(new appError('esta ruta no es para cambio de passwords', 400));
+
+
+  if (!req.body.username && !req.file && !req.body.mail) {
+    return next(new appError('no has cambiado ningun dato!', 400));
   }
-  const userUpdate = await User.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
+
+
+  const filteredRequest = filteredRequestBody(
+    req.body,
+    'id',
+    'username',
+    'photo',
+    'mail'
+  );
+
+  if (req.body.mail === '') {
+    delete filteredRequest.mail;
+  }
+  if (req.body.username === '') {
+    delete filteredRequest.username;
+  }
+  if (req.file) {
+    filteredRequest.photo = req.file.filename;
+  } else {
+    delete filteredRequest.photo;
+  }
+
+  const userUpdate = await User.findByIdAndUpdate(
+    filteredRequest.id,
+    filteredRequest,
+    {
+      new: true,
+    }
+  );
   if (!userUpdate) {
     return next(
-      new appError(`no se encontro el usuario con el ID: ${req.params.id}`, 404)
+      new appError(
+        `no se encontro el usuario con el ID: ${filteredRequest.id}`,
+        404
+      )
     );
   }
-  res.status(204).json({ status: 'success', data: { userUpdate } });
+  res.status(200).json({ status: 'success', data: { userUpdate } });
 });
 exports.deleteUser = catchAsync(async (req, res, next) => {
   try {
-    //const userDelete = await User.findByIdAndDelete(req.params.id);
-    const userDelete = await User.findByIdAndUpdate(req.body.id, { active: 0 });
-
+    const userDelete = await User.findByIdAndUpdate(
+      req.body.id,
+      { active: 0 },
+      { new: true }
+    );
     if (!userDelete) {
       return next(
         new appError(`no se encontro el usuario con el ID: ${req.body.id}`, 404)
       );
     }
     res
-      .status(204)
-      .json({ status: 'success', message: 'usuario borrado con exito' });
+      .status(200)
+      .json({ status: 'success', data: 'usuario Borrado con exito!' });
   } catch (err) {
     return next(new appError(`${err}`, 404));
   }

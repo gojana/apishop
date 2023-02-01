@@ -45,7 +45,12 @@ router
     authController.roleValidator('user', 'admin'),
     userController.getUserById
   )
-  .patch(authController.roleValidator('admin'), userController.updateUser)
+  .patch(
+    authController.roleValidator('admin'),
+    userController.uploadUserPhoto,
+    userController.resizeImage,
+    userController.updateUser
+  )
   .delete(authController.roleValidator('admin'), userController.deleteUser);
 
 module.exports = router;
