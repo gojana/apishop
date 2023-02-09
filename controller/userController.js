@@ -126,12 +126,9 @@ exports.addUser = catchAsync(async (req, res) => {
   res.status(200).json({ status: 'success', data: { newUser } });
 });
 exports.updateUser = catchAsync(async (req, res, next) => {
-
-
   if (!req.body.username && !req.file && !req.body.mail) {
     return next(new appError('no has cambiado ningun dato!', 400));
   }
-
 
   const filteredRequest = filteredRequestBody(
     req.body,

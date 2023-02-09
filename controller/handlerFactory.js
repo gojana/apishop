@@ -56,16 +56,35 @@ exports.updateDoc = (model) =>
   });
 
 exports.deleteDoc = (model) =>
-  catchAsync(async (req, res) => {
+  catchAsync(async (req, res, next) => {
     const doc = await model.findByIdAndDelete(req.params.id);
-    if (!doc) {
+    if (!doc)
       return next(
         new appError(
           `no se encontro el documento con el ID: ${req.params.id}`,
           404
         )
       );
-    }
 
     res.status(200).json({ status: 'success', data: 'null' });
+  });
+
+exports.deActivateDoc = (model) =>
+  catchAsync(async (req, res, next) => {
+    const doc = await model.findByIdAndUpdate(
+      req.params.id,
+      { active: 0 },
+      {
+        new: true,
+      }
+    );
+    if (!doc) {
+      return next(
+        new appError(
+          `no se encontro el documento con el ID: ${req.param.id}`,
+          404
+        )
+      );
+    }
+    res.status(200).json({ status: 'success', data: doc, runvalidator: true });
   });

@@ -95,4 +95,4 @@ exports.getProductById = factory.getDocById(Product);
 
 exports.addProduct = factory.addDoc(Product);
 exports.updateProduct = factory.updateDoc(Product);
-exports.deleteProduct = factory.deleteDoc(Product);
+exports.deleteProduct = factory.deActivateDoc(Product);
