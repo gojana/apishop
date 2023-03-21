@@ -23,7 +23,7 @@ const handlerExpiredError = () => {
   return new appError('tu token expiro, loguea denuevo', 401);
 };
 //refactorizacion de codigo error de funcion exportada en module.export
-const sendErroDev = (err, res) => {
+const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
     message: err.message,
@@ -51,7 +51,7 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
-    sendErroDev(err, res);
+    sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === 'production') {
     let error = { ...err };
     error.message = err.message;

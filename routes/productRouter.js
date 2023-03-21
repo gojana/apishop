@@ -24,7 +24,7 @@ router
   .get(productController.getProductById)
   .patch(
     authController.protectRoutes,
-    authController.roleValidator('user'),
+    authController.roleValidator('admin'),
     productController.uploadProductImage,
     productController.resizeImage,
     productController.updateProduct

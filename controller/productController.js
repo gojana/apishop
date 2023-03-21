@@ -21,17 +21,16 @@ const upload = multer({
   storage: multerStorage,
   fileFilter: multerFilter,
 });
-exports.uploadProductImage = upload.fields([{ name: 'images', maxCount: 5 }]);
+exports.uploadProductImage = upload.fields([{ name: 'images', maxCount: 4 }]);
 
 exports.resizeImage = catchAsync(async (req, res, next) => {
-  if (!req.files) return next();
+  if (!req.files.images) return next();
 
   req.body.images = [];
-
   await Promise.all(
-    req.files.images.map(async (file, i) => {
+    req.files.images.map((file, i) => {
       const filename = `product-${req.params.id}-${i + 1}.jpeg`;
-      await sharp(file.buffer)
+      sharp(file.buffer)
         .resize(500, 500)
         .toFormat('jpeg')
         .jpeg({ quality: 60 })
@@ -39,6 +38,7 @@ exports.resizeImage = catchAsync(async (req, res, next) => {
       req.body.images.push(filename);
     })
   );
+
   next();
 });
 
@@ -95,4 +95,4 @@ exports.getProductById = factory.getDocById(Product);
 
 exports.addProduct = factory.addDoc(Product);
 exports.updateProduct = factory.updateDoc(Product);
-exports.deleteProduct = factory.deActivateDoc(Product);
+exports.deleteProduct = factory.deleteDoc(Product);
